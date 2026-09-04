@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF8F3;
+    --pink:#F6B8CE;
+    --pink-deep:#E8829F;
+    --pink-pale:#FDE3EC;
+    --green:#A8C8A0;
+    --green-deep:#5C7A5C;
+    --green-pale:#E3EFDD;
+    --ink:#4A3B35;
+    --gold:#FFC857;
+    --paper:#FFFDF9;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 20%, var(--pink-pale), transparent 45%),
+      radial-gradient(circle at 85% 80%, var(--green-pale), transparent 45%),
+      var(--cream);
+    font-family:'Quicksand', sans-serif;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-x:hidden;
+    padding:24px;
+  }
+
+  .script{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    margin:0;
+  }
+
+  /* ---------- background decoration ---------- */
+  .blob{
+    position:fixed;
+    border-radius:50%;
+    filter:blur(2px);
+    opacity:.5;
+    pointer-events:none;
+    animation:drift 9s ease-in-out infinite;
+  }
+  .blob.b1{width:70px;height:70px;background:var(--pink);top:12%;left:10%;animation-delay:0s;}
+  .blob.b2{width:40px;height:40px;background:var(--green);top:75%;left:15%;animation-delay:2s;}
+  .blob.b3{width:55px;height:55px;background:var(--gold);top:20%;right:12%;opacity:.35;animation-delay:1s;}
+  .blob.b4{width:30px;height:30px;background:var(--pink-deep);bottom:10%;right:18%;opacity:.4;animation-delay:3s;}
+
+  @keyframes drift{
+    0%,100%{transform:translateY(0) translateX(0);}
+    50%{transform:translateY(-14px) translateX(8px);}
+  }
+
+  /* ---------- book ---------- */
+  .scene{
+    position:relative;
+    width:100%;
+    max-width:720px;
+  }
+
+  .book{
+    position:relative;
+    width:100%;
+    aspect-ratio:4/3;
+    perspective:2200px;
+  }
+
+  .spread{
+    position:absolute;
+    inset:0;
+    background:var(--paper);
+    border-radius:18px;
+    box-shadow:0 18px 40px -18px rgba(74,59,53,.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    padding:28px;
+    text-align:center;
+    backface-visibility:hidden;
+    transform-style:preserve-3d;
+    transition:transform .8s cubic-bezier(.4,.1,.2,1), opacity .5s ease;
+  }
+  #spread1{transform:rotateY(0deg);opacity:1;z-index:2;}
+  #spread2{transform:rotateY(90deg);opacity:0;pointer-events:none;z-index:1;}
+  #spread2.active{transform:rotateY(0deg);opacity:1;pointer-events:auto;z-index:2;}
+  #spread1.inactive{transform:rotateY(-90deg);opacity:0;pointer-events:none;z-index:1;}
+
+  .page-flip{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:none;
+    background:var(--pink);
+    color:var(--paper);
+    font-size:22px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:0 6px 14px -6px rgba(232,130,159,.7);
+    transition:transform .2s ease, background .2s ease;
+  }
+  .page-flip:hover{transform:translateY(-50%) scale(1.08);background:var(--pink-deep);}
+  .page-flip:focus-visible{outline:3px solid var(--green-deep);outline-offset:2px;}
+  .page-flip.next{right:-14px;}
+  .page-flip.prev{left:-14px;}
+
+  /* ---------- cover ---------- */
+  .cover{
+    position:absolute;
+    inset:0;
+    z-index:5;
+    background:linear-gradient(135deg, var(--pink) 0%, var(--pink-deep) 100%);
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transform-origin:left center;
+    transform-style:preserve-3d;
+    box-shadow:0 20px 45px -18px rgba(74,59,53,.45);
+    transition:transform 1s cubic-bezier(.6,.1,.25,1);
+  }
+  .cover.opened{transform:rotateY(-160deg);}
+  .cover.hidden{visibility:hidden;}
+
+  .cover-inner{
+    color:var(--paper);
+    padding:20px;
+  }
+  .cover-inner h1{font-size:clamp(2.4rem,7vw,3.6rem);}
+  .tap-hint{
+    margin-top:10px;
+    font-size:.95rem;
+    letter-spacing:.02em;
+    opacity:.9;
+  }
+  @keyframes pulse{0%,100%{opacity:.9;}50%{opacity:.5;}}
+  .tap-hint{animation:pulse 2.2s ease-in-out infinite;}
+
+  /* ---------- cake page ---------- */
+  .page-cake h2{font-size:clamp(1.8rem,5vw,2.4rem);color:var(--pink-deep);margin-bottom:6px;}
+  .cake-svg{width:min(340px,70%);height:auto;}
+
+  .candle{cursor:pointer;}
+  .candle.out .flame{display:none;}
+  .candle:not(.out):hover .flame{filter:brightness(1.15);}
+
+  .hint{margin-top:14px;font-size:1.05rem;color:var(--green-deep);min-height:1.4em;}
+
+  .smoke{
+    position:absolute;
+    width:8px;height:8px;
+    background:rgba(150,150,150,.55);
+    border-radius:50%;
+    pointer-events:none;
+    animation:rise 1s ease-out forwards;
+  }
+  @keyframes rise{
+    0%{opacity:.7;transform:translateY(0) scale(1);}
+    100%{opacity:0;transform:translateY(-38px) scale(2.2);}
+  }
+
+  /* ---------- envelopes page ---------- */
+  .page-envelopes h2{font-size:clamp(1.8rem,5vw,2.4rem);color:var(--green-deep);margin-bottom:18px;}
+  .envelopes{
+    display:flex;
+    gap:32px;
+    flex-wrap:wrap;
+    align-items:flex-start;
+    justify-content:center;
+  }
+
+  .envelope{
+    position:relative;
+    width:150px;
+    height:104px;
+    cursor:pointer;
+    perspective:600px;
+  }
+  .envelope .body{
+    position:absolute;
+    inset:0;
+    background:var(--pink-pale);
+    border:2px solid var(--pink);
+    border-radius:8px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom:8px;
+    font-family:'Caveat',cursive;
+    font-size:1.15rem;
+    color:var(--pink-deep);
+    z-index:1;
+    transition:box-shadow .2s ease;
+  }
+  .envelope:nth-child(2) .body{background:var(--green-pale);border-color:var(--green);color:var(--green-deep);}
+  .envelope:hover .body{box-shadow:0 8px 18px -8px rgba(74,59,53,.4);}
+
+  .flap{
+    position:absolute;
+    top:0;left:0;right:0;
+    height:56px;
+    background:var(--pink);
+    clip-path:polygon(0 0, 100% 0, 50% 100%);
+    transform-origin:top center;
+    transition:transform .5s ease;
+    z-index:3;
+  }
+  .envelope:nth-child(2) .flap{background:var(--green);}
+  .envelope.open .flap{transform:rotateX(180deg);}
+
+  .seal{
+    position:absolute;
+    top:34px;left:50%;
+    transform:translate(-50%,0);
+    width:22px;height:22px;
+    background:var(--gold);
+    border-radius:50%;
+    z-index:4;
+    box-shadow:0 2px 4px rgba(0,0,0,.15);
+    transition:opacity .2s ease;
+  }
+  .envelope.open .seal{opacity:0;}
+
+  .peek{
+    position:absolute;
+    left:8%;
+    right:8%;
+    bottom:6px;
+    height:0;
+    background:var(--paper);
+    border-radius:4px 4px 0 0;
+    z-index:2;
+    transition:height .35s ease .15s;
+  }
+  .envelope.open .peek{height:60%;}
+
+  /* ---------- letter overlay ---------- */
+  .letter-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(74,59,53,.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:20;
+    padding:20px;
+  }
+  .letter-overlay[hidden]{display:none;}
+
+  .letter-paper{
+    position:relative;
+    max-width:560px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+    background:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--pink-pale) 28px);
+    background-color:var(--paper);
+    border-radius:6px;
+    padding:36px 30px 30px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.4);
+    animation:pop-in .35s cubic-bezier(.2,.8,.3,1.2);
+  }
+  @keyframes pop-in{
+    from{opacity:0;transform:scale(.9) translateY(10px);}
+    to{opacity:1;transform:scale(1) translateY(0);}
+  }
+
+  .letter-paper h3{font-family:'Caveat',cursive;font-size:2rem;color:var(--pink-deep);margin:0 0 12px;}
+  .letter-paper p{line-height:1.75;white-space:pre-line;margin:0;font-size:1.02rem;}
+  .letter-image{
+    display:block;
+    width:100%;
+    max-height:72vh;
+    object-fit:contain;
+    border-radius:8px;
+    box-shadow:0 10px 24px -12px rgba(74,59,53,.35);
+    background:#fff;
+  }
+
+  .close-letter{
+    position:absolute;
+    top:10px;right:12px;
+    width:30px;height:30px;
+    border:none;
+    border-radius:50%;
+    background:var(--pink);
+    color:var(--paper);
+    font-size:18px;
+    cursor:pointer;
+  }
+  .close-letter:hover{background:var(--pink-deep);}
+  .close-letter:focus-visible{outline:3px solid var(--green-deep);}
+
+  .music-toggle{
+    position:absolute;
+    top:10px;right:50px;
+    min-height:30px;
+    padding:0 10px;
+    border:2px solid var(--pink);
+    border-radius:15px;
+    background:var(--paper);
+    color:var(--pink-deep);
+    font-family:'Quicksand',sans-serif;
+    font-size:.8rem;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .music-toggle:hover{background:var(--pink-pale);}
+  .music-toggle:focus-visible{outline:3px solid var(--green-deep);outline-offset:2px;}
+
+  /* ---------- confetti ---------- */
+  .confetti{
+    position:fixed;
+    top:-10px;
+    width:8px;height:14px;
+    z-index:30;
+    pointer-events:none;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    to{transform:translateY(110vh) rotate(540deg);opacity:.8;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .blob, .tap-hint, .flame{animation:none;}
+    .cover, .spread, .letter-paper{transition:none;}
+  }
+
+  @media (max-width:480px){
+    .book{aspect-ratio:3/4;}
+    .envelopes{gap:18px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<div class="blob b4"></div>
+
+<div class="scene">
+  <div class="book" id="book">
+
+    <div class="cover" id="cover" role="button" tabindex="0" aria-label="Open birthday card">
+      <div class="cover-inner">
+        <h1 class="script">Happy Birthday, Cherielle!</h1>
+        <p class="tap-hint">tap to open</p>
+      </div>
+    </div>
+
+    <div class="spread" id="spread1">
+      <h2 class="script">Make a wish</h2>
+      <svg class="cake-svg" viewBox="0 0 200 170" xmlns="http://www.w3.org/2000/svg">
+        <!-- plate -->
+        <ellipse cx="100" cy="152" rx="78" ry="10" fill="#E3EFDD"/>
+        <!-- bottom tier -->
+        <rect x="35" y="105" width="130" height="45" rx="8" fill="#F6B8CE"/>
+        <rect x="35" y="105" width="130" height="10" rx="4" fill="#FDE3EC"/>
+        <!-- top tier -->
+        <rect x="58" y="72" width="84" height="38" rx="8" fill="#A8C8A0"/>
+        <rect x="58" y="72" width="84" height="9" rx="4" fill="#E3EFDD"/>
+        <!-- drips -->
+        <circle cx="45" cy="106" r="5" fill="#FDE3EC"/>
+        <circle cx="70" cy="106" r="5" fill="#FDE3EC"/>
+        <circle cx="150" cy="106" r="5" fill="#FDE3EC"/>
+        <circle cx="65" cy="73" r="4" fill="#E3EFDD"/>
+        <circle cx="120" cy="73" r="4" fill="#E3EFDD"/>
+
+        <!-- candles + flames, 5 total, all within the 58-142 top tier -->
+        <g class="candle" data-i="0">
+          <rect x="62.5" y="50" width="7" height="24" fill="#FFC857"/>
+          <path class="flame" d="M66 48 C69.5 43 69.5 38 66 34 C62.5 38 62.5 43 66 48Z" fill="#FFB13C"/>
+        </g>
+        <g class="candle" data-i="1">
+          <rect x="79.5" y="46" width="7" height="28" fill="#E8829F"/>
+          <path class="flame" d="M83 44 C86.5 39 86.5 34 83 30 C79.5 34 79.5 39 83 44Z" fill="#FFB13C"/>
+        </g>
+        <g class="candle" data-i="2">
+          <rect x="96.5" y="42" width="7" height="32" fill="#A8C8A0"/>
+          <path class="flame" d="M100 40 C103.5 35 103.5 30 100 26 C96.5 30 96.5 35 100 40Z" fill="#FFB13C"/>
+        </g>
+        <g class="candle" data-i="3">
+          <rect x="113.5" y="46" width="7" height="28" fill="#FFC857"/>
+          <path class="flame" d="M117 44 C120.5 39 120.5 34 117 30 C113.5 34 113.5 39 117 44Z" fill="#FFB13C"/>
+        </g>
+        <g class="candle" data-i="4">
+          <rect x="130.5" y="50" width="7" height="24" fill="#E8829F"/>
+          <path class="flame" d="M134 48 C137.5 43 137.5 38 134 34 C130.5 38 130.5 43 134 48Z" fill="#FFB13C"/>
+        </g>
+      </svg>
+      <p class="hint" id="cakeHint">click each candle to blow it out ✨</p>
+      <button class="page-flip next" id="toSpread2" aria-label="Next page">›</button>
+    </div>
+
+    <div class="spread" id="spread2">
+      <button class="page-flip prev" id="toSpread1" aria-label="Previous page">‹</button>
+      <h2 class="script">Two letters for you</h2>
+      <div class="envelopes">
+        <div class="envelope" id="envelope1" role="button" tabindex="0" aria-label="Open first letter">
+          <div class="flap"></div>
+          <div class="seal"></div>
+          <div class="peek"></div>
+          <div class="body">sonder</div>
+        </div>
+        <div class="envelope" id="envelope2" role="button" tabindex="0" aria-label="Open second letter">
+          <div class="flap"></div>
+          <div class="seal"></div>
+          <div class="peek"></div>
+          <div class="body">kris</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="letter-overlay" id="letterOverlay" hidden>
+  <div class="letter-paper" role="dialog" aria-modal="true">
+    <button class="close-letter" id="closeLetter" aria-label="Close letter">×</button>
+    <button class="music-toggle" id="musicToggle" type="button" aria-label="Pause music">Pause music</button>
+    <h3 id="letterTitle"></h3>
+    <img id="letterImage" class="letter-image" alt="Birthday letter" hidden>
+    <p id="letterBody"></p>
+  </div>
+</div>
+
+<script>
+  const LETTERS = {
+    1: {
+      title: "",
+      image: "sonderletter,.png",
+      music: "ilikemebetter.mp3",
+      body: ``
+    },
+    2: {
+      title: "",
+      image: "krisletter.png",
+      music: "bdaysex.mp3",
+      body: ``
+    }
+  };
+  // =========================================================
+
+  const cover = document.getElementById('cover');
+  const spread1 = document.getElementById('spread1');
+  const spread2 = document.getElementById('spread2');
+  const toSpread2 = document.getElementById('toSpread2');
+  const toSpread1 = document.getElementById('toSpread1');
+  const cakeHint = document.getElementById('cakeHint');
+
+  function openCover(){
+    if(cover.classList.contains('opened')) return;
+    cover.classList.add('opened');
+    cover.addEventListener('transitionend', () => cover.classList.add('hidden'), {once:true});
+  }
+  cover.addEventListener('click', openCover);
+  cover.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openCover(); }});
+
+  toSpread2.addEventListener('click', () => {
+    spread1.classList.add('inactive');
+    spread2.classList.add('active');
+  });
+  toSpread1.addEventListener('click', () => {
+    spread2.classList.remove('active');
+    spread1.classList.remove('inactive');
+  });
+
+  // ---- candles ----
+  const candles = document.querySelectorAll('.candle');
+  let litCount = candles.length;
+
+  function spawnSmoke(candleEl){
+    const rect = candleEl.getBoundingClientRect();
+    const smoke = document.createElement('div');
+    smoke.className = 'smoke';
+    smoke.style.left = (rect.left + rect.width/2 - 4) + 'px';
+    smoke.style.top = rect.top + 'px';
+    smoke.style.position = 'fixed';
+    document.body.appendChild(smoke);
+    setTimeout(() => smoke.remove(), 1000);
+  }
+
+  function spawnConfetti(){
+    const colors = ['#F6B8CE','#A8C8A0','#FFC857','#E8829F','#FDE3EC'];
+    for(let i=0;i<40;i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random()*100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.animationDuration = (2 + Math.random()*1.5) + 's';
+      c.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 3600);
+    }
+  }
+
+  candles.forEach(c => {
+    c.addEventListener('click', () => {
+      if(c.classList.contains('out')) return;
+      c.classList.add('out');
+      spawnSmoke(c);
+      litCount--;
+      if(litCount === 0){
+        cakeHint.textContent = 'wish granted 🎉';
+        spawnConfetti();
+      } else {
+        cakeHint.textContent = (litCount) + ' more to go...';
+      }
+    });
+  });
+
+  // ---- envelopes ----
+  function setupEnvelope(id, letterKey){
+    const env = document.getElementById(id);
+    const open = () => {
+      env.classList.add('open');
+      playLetterMusic(letterKey);
+      setTimeout(() => showLetter(letterKey), 350);
+    };
+    const close = () => {
+      env.classList.remove('open');
+      closeLetterOverlay();
+    };
+    const toggle = () => {
+      if (env.classList.contains('open')) {
+        close();
+        return;
+      }
+      open();
+    };
+    env.addEventListener('click', toggle);
+    env.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); }});
+  }
+  setupEnvelope('envelope1', 1);
+  setupEnvelope('envelope2', 2);
+
+  const overlay = document.getElementById('letterOverlay');
+  const letterTitle = document.getElementById('letterTitle');
+  const letterBody = document.getElementById('letterBody');
+  const letterImage = document.getElementById('letterImage');
+  const closeLetter = document.getElementById('closeLetter');
+  const musicToggle = document.getElementById('musicToggle');
+  let currentAudio = null;
+
+  function playLetterMusic(key){
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+
+    const music = LETTERS[key].music;
+    if (!music) return;
+
+    currentAudio = new Audio(music);
+    currentAudio.loop = true;
+    currentAudio.volume = 0.25;
+    currentAudio.play().catch(() => {});
+    musicToggle.textContent = 'Pause music';
+    musicToggle.setAttribute('aria-label', 'Pause music');
+  }
+
+  musicToggle.addEventListener('click', () => {
+    if (!currentAudio) return;
+
+    if (currentAudio.paused) {
+      currentAudio.play();
+      musicToggle.textContent = 'Pause music';
+      musicToggle.setAttribute('aria-label', 'Pause music');
+    } else {
+      currentAudio.pause();
+      musicToggle.textContent = 'Play music';
+      musicToggle.setAttribute('aria-label', 'Play music');
+    }
+  });
+
+  function showLetter(key){
+    const data = LETTERS[key];
+    letterTitle.textContent = data.title || '';
+    letterBody.textContent = data.body || '';
+
+    if (data.image) {
+      letterImage.src = data.image;
+      letterImage.alt = data.title || 'Birthday letter';
+      letterImage.hidden = false;
+      letterTitle.hidden = false;
+      letterBody.hidden = true;
+    } else {
+      letterImage.hidden = true;
+      letterImage.removeAttribute('src');
+      letterTitle.hidden = false;
+      letterBody.hidden = false;
+    }
+
+    overlay.hidden = false;
+  }
+  function closeLetterOverlay(){
+    overlay.hidden = true;
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio = null;
+    }
+    musicToggle.textContent = 'Pause music';
+    musicToggle.setAttribute('aria-label', 'Pause music');
+    letterImage.hidden = true;
+    letterImage.removeAttribute('src');
+    letterBody.hidden = false;
+    const openEnvelope = document.querySelector('.envelope.open');
+    if (openEnvelope) openEnvelope.classList.remove('open');
+  }
+  closeLetter.addEventListener('click', closeLetterOverlay);
+  overlay.addEventListener('click', e => { if(e.target === overlay) closeLetterOverlay(); });
+</script>
+
+</body>
+</html>
